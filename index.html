@@ -47,7 +47,7 @@
     </div>
 
     <div class="p-5 space-y-5 overflow-y-auto flex-1">
-      <!-- 1. 上传主照片（原生 input 透明全覆盖，100% 物理直达触发） -->
+      <!-- 1. 上传主照片 -->
       <div>
         <span class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">1. 上传摄影作品 (支持自动读 EXIF)</span>
         <div id="dropZone" class="relative border-2 border-dashed border-zinc-700 hover:border-white transition-colors rounded-lg p-5 text-center bg-zinc-950/50 overflow-hidden">
@@ -59,7 +59,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
             <p class="text-xs text-zinc-300 font-medium">点击或拖拽原图到此处</p>
-            <p class="text-[11px] text-zinc-500 mt-1">左上角锚点对齐 · 宽/短边锁定 900px 等比缩放</p>
+            <p class="text-[11px] text-zinc-500 mt-1">首屏左上角锚点 · 二三屏正中心锚点</p>
           </div>
         </div>
         <div id="exifStatus" class="mt-2 text-[11px] text-zinc-400 hidden flex items-center gap-1.5"></div>
@@ -477,7 +477,7 @@
     }
 
     // ==========================================
-    // 3. 辅助函数：将任意砖墙底图无痕镜像延展至 3240 × 1800
+    // 3. 辅助函数：底图无痕镜像延展 & 两种锚点绘制引擎
     // ==========================================
     function drawSeamlessBackground(ctx, bgImg, targetW, targetH) {
       const scale = targetH / bgImg.height;
@@ -500,21 +500,8 @@
       }
     }
 
-    // 以左上角为锚点，锁定基准宽/短边等比缩放
-    function drawAnchoredFramedPhoto(ctx, img, anchorX, anchorY, baseSpanW, maxAllowedH) {
-      const imgRatio = img.width / img.height;
-
-      let frameW = baseSpanW;
-      let frameH = frameW / imgRatio;
-
-      if (maxAllowedH && frameH > maxAllowedH) {
-        frameH = maxAllowedH;
-        frameW = frameH * imgRatio;
-      }
-
-      const frameX = anchorX;
-      const frameY = anchorY;
-
+    // 渲染画框与作品本体的底层 helper
+    function paintFrameAndImage(ctx, img, frameX, frameY, frameW, frameH) {
       const border = state.frameWidth;
       const photoX = frameX + border;
       const photoY = frameY + border;
@@ -534,8 +521,40 @@
       ctx.restore();
 
       ctx.drawImage(img, photoX, photoY, photoW, photoH);
-
       return { frameX, frameY, frameW, frameH };
+    }
+
+    // 模式 A（第一屏专用）：以左上角 (anchorX, anchorY) 为固定锚点，短边/宽度锁定 900px 等比缩放
+    function drawTopLeftAnchoredPhoto(ctx, img, anchorX, anchorY, baseSpanW, maxAllowedH) {
+      const imgRatio = img.width / img.height;
+      let frameW = baseSpanW;
+      let frameH = frameW / imgRatio;
+
+      if (maxAllowedH && frameH > maxAllowedH) {
+        frameH = maxAllowedH;
+        frameW = frameH * imgRatio;
+      }
+
+      return paintFrameAndImage(ctx, img, anchorX, anchorY, frameW, frameH);
+    }
+
+    // 模式 B（第二、三屏连图专用）：以区域正中心为锚点，在 maxBoxW × maxBoxH 内对称居中缩放
+    function drawCenterAnchoredPhoto(ctx, img, boxLeft, boxTop, maxBoxW, maxBoxH) {
+      const imgRatio = img.width / img.height;
+      let frameW = maxBoxW;
+      let frameH = frameW / imgRatio;
+
+      if (frameH > maxBoxH) {
+        frameH = maxBoxH;
+        frameW = frameH * imgRatio;
+      }
+
+      const centerX = boxLeft + maxBoxW / 2;
+      const centerY = boxTop + maxBoxH / 2;
+      const frameX = centerX - frameW / 2;
+      const frameY = centerY - frameH / 2;
+
+      return paintFrameAndImage(ctx, img, frameX, frameY, frameW, frameH);
     }
 
     // ==========================================
@@ -577,11 +596,11 @@
         ctx.letterSpacing = '0px';
       }
 
-      // 第一屏主海报：左上角锚点固定 (90, 300)
+      // 1. 第一屏主海报 (0 ~ 1080 px)：左上角固定锚点 (90, 300)
       const p1MaxH = footerY - 300 - 70 - 95;
-      const p1Frame = drawAnchoredFramedPhoto(ctx, img, 90, 300, 900, p1MaxH);
+      const p1Frame = drawTopLeftAnchoredPhoto(ctx, img, 90, 300, 900, p1MaxH);
 
-      // 第一屏黑底白字独立徽章铭牌
+      // 第一屏黑底白字独立徽章铭牌（始终紧跟第一屏画框底边下方 70px）
       const badgeStartX = p1Frame.frameX;
       let currentY = p1Frame.frameY + p1Frame.frameH + 70;
 
@@ -644,10 +663,10 @@
         });
       }
 
-      // 第二、三屏双图无缝大图：左上角锚点固定 (1170, 218)
-      const p2MaxH = footerY - 218 - 60;
-      drawAnchoredFramedPhoto(ctx, img, 1080 + 90, 218, 1980, p2MaxH);
+      // 2. 第二、三屏双图无缝连图 (1080 ~ 3240 px)：以正中心 (2160, 878) 为锚点对称居中缩放
+      drawCenterAnchoredPhoto(ctx, img, 1080 + 90, 218, 1980, 1320);
 
+      // 3. 预览模式下的两道裁切参考线
       if (showGuideLines) {
         ctx.save();
         ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
