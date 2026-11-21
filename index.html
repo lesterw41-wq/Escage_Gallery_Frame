@@ -56,7 +56,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
           <p class="text-xs text-zinc-300 font-medium">点击或拖拽原图到此处</p>
-          <p class="text-[11px] text-zinc-500 mt-1">建议上传 JPG 原图以保留完整拍摄参数</p>
+          <p class="text-[11px] text-zinc-500 mt-1">左上角锚点对齐 · 宽/短边锁定 900px 等比缩放</p>
         </div>
         <div id="exifStatus" class="mt-2 text-[11px] text-zinc-400 hidden flex items-center gap-1.5"></div>
       </div>
@@ -353,7 +353,6 @@
       return x - Math.floor(x);
     }
 
-    // 生成 3240 × 1800 无规律自然石膏白砖墙兜底纹理
     function createOrganicBrickWallCanvas(width = 3240, height = 1800) {
       const c = document.createElement('canvas');
       c.width = width;
@@ -415,7 +414,6 @@
       }
       ctx.putImageData(imgData, 0, 0);
 
-      // 每一屏顶部自然射灯漫反射光感
       [540, 1620, 2700].forEach(cx => {
         const grad = ctx.createRadialGradient(cx, height * 0.32, 80, cx, height * 0.5, 950);
         grad.addColorStop(0, 'rgba(255,255,255,0.20)');
@@ -486,7 +484,6 @@
       while (cursorX < targetW) {
         ctx.save();
         if (index % 2 === 1) {
-          // 奇数块水平镜像翻转，确保砖缝与光影在接缝处 100% 连续无断层
           ctx.translate(cursorX + tileW, 0);
           ctx.scale(-1, 1);
           ctx.drawImage(bgImg, 0, 0, tileW, targetH);
@@ -499,18 +496,25 @@
       }
     }
 
-    // 绘制单个装裱画框与内图
-    function drawFramedPhoto(ctx, img, boxLeft, boxTop, boxMaxW, boxMaxH) {
+    // ==========================================
+    // 核心缩放逻辑：以左上角为锚点，锁定基准宽/短边等比缩放
+    // ==========================================
+    function drawAnchoredFramedPhoto(ctx, img, anchorX, anchorY, baseSpanW, maxAllowedH) {
       const imgRatio = img.width / img.height;
-      let frameW = boxMaxW;
+
+      // 始终以 anchorX, anchorY 为固定左上角锚点
+      // 横向基准锁定为 baseSpanW (第一屏 900px / 二三屏 1980px)，竖图时保持短边 900px 向下延伸
+      let frameW = baseSpanW;
       let frameH = frameW / imgRatio;
-      if (frameH > boxMaxH) {
-        frameH = boxMaxH;
+
+      // 安全防溢出保护：若极端超长竖图超出画布可用高度，等比限制在 maxAllowedH 内且仍钉死左上角
+      if (maxAllowedH && frameH > maxAllowedH) {
+        frameH = maxAllowedH;
         frameW = frameH * imgRatio;
       }
 
-      const frameX = boxLeft + (boxMaxW - frameW) / 2;
-      const frameY = boxTop + (boxMaxH - frameH) / 2;
+      const frameX = anchorX;
+      const frameY = anchorY;
 
       const border = state.frameWidth;
       const photoX = frameX + border;
@@ -561,7 +565,7 @@
         ctx.drawImage(state.organicBrickPattern, 0, 0);
       }
 
-      // 2. 底部通栏版权黑条 (严格 45px 高度，横跨整张 3240px 长卷)
+      // 2. 底部通栏版权黑条 (严格 45px 高度)
       const footerH = 45;
       const footerY = totalH - footerH;
       ctx.fillStyle = '#050505';
@@ -573,17 +577,17 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.letterSpacing = '1.2px';
-        // 第一屏居中版权文字 (x = 540)
         ctx.fillText(state.copyright.trim(), 540, footerY + footerH / 2 + 1);
-        // 第二、三屏拼接正中版权文字 (x = 2160，切开后完美衔接)
         ctx.fillText(state.copyright.trim(), 2160, footerY + footerH / 2 + 1);
         ctx.letterSpacing = '0px';
       }
 
-      // 3. 绘制第一屏主海报 (0 ~ 1080 px): 左留白 90, 顶留白 300, 内框 900 × 600
-      const p1Frame = drawFramedPhoto(ctx, img, 90, 300, 900, 600);
+      // 3. 第一屏主海报 (0 ~ 1080 px)：左上角锚点固定 (90, 300)，短边/宽度锁定 900px
+      // 为下方 70px 间距 + 约 80px 铭牌 + 底部 45px 版权条预留空间 (最大画框高 1260px，兼容 2:3 竖图完整 900×1350 见下方动态计算)
+      const p1MaxH = footerY - 300 - 70 - 95; // = 1290px，横图(600px)与常见4:5竖图(1125px)均100%保持900px短边
+      const p1Frame = drawAnchoredFramedPhoto(ctx, img, 90, 300, 900, p1MaxH);
 
-      // 4. 在第一屏画框下方 70px 处绘制黑底白字独立徽章铭牌（间隔 6px）
+      // 4. 在第一屏画框下方 70px 处绘制黑底白字独立徽章铭牌（始终紧跟画框底边，间距 6px）
       const badgeStartX = p1Frame.frameX;
       let currentY = p1Frame.frameY + p1Frame.frameH + 70;
 
@@ -646,289 +650,5 @@
         });
       }
 
-      // 5. 绘制第二、三屏双图无缝大图 (1080 ~ 3240 px): 左留白 90 (即 x = 1170), 顶留白 218, 内框 1980 × 1320
-      drawFramedPhoto(ctx, img, 1080 + 90, 218, 1980, 1320);
-
-      // 6. 预览模式下的两道裁切参考线 (x = 1080 与 x = 2160)
-      if (showGuideLines) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([14, 10]);
-        [1080, 2160].forEach(lineX => {
-          ctx.beginPath();
-          ctx.moveTo(lineX, 0);
-          ctx.lineTo(lineX, totalH);
-          ctx.stroke();
-        });
-        ctx.restore();
-      }
-
-      return canvas;
-    }
-
-    // ==========================================
-    // 5. 自动探测并加载仓库同级目录下的 brick-bg 图片素材
-    // ==========================================
-    function loadRepoBrickBackground() {
-      const statusText = document.getElementById('bgStatusText');
-      const candidates = ['brick-bg.jpg', 'brick-bg.png', 'brick-bg.webp', 'brick-bg.JPG'];
-      let idx = 0;
-
-      function tryNext() {
-        if (idx >= candidates.length) {
-          statusText.innerHTML = `<span class="text-zinc-400">当前：自然石膏纹理 (上传 <code class="text-zinc-200">brick-bg.jpg</code> 至仓库可自动替换)</span>`;
-          updatePreview();
-          return;
-        }
-        const filename = candidates[idx++];
-        const img = new Image();
-        img.onload = () => {
-          state.repoBgImg = img;
-          statusText.innerHTML = `<span class="text-emerald-400">✓ 已自动加载仓库素材 <code class="underline">${filename}</code></span>`;
-          updatePreview();
-        };
-        img.onerror = () => {
-          tryNext();
-        };
-        img.src = `./${filename}?v=${Date.now()}`;
-      }
-
-      tryNext();
-    }
-
-    // ==========================================
-    // 6. 界面刷新与交互绑定
-    // ==========================================
-    function updatePreview() {
-      const previewCanvas = document.getElementById('previewCanvas');
-      const resInfo = document.getElementById('resolutionInfo');
-      const singleWrap = document.getElementById('singlePreviewWrap');
-      const slicesWrap = document.getElementById('slicesPreviewWrap');
-
-      if (state.viewMode === 'slices') {
-        singleWrap.classList.add('hidden');
-        slicesWrap.classList.remove('hidden');
-        const fullScroll = renderTripleScrollCanvas(false);
-        const w = 1080;
-        const h = 1800;
-
-        ['slice1Canvas', 'slice2Canvas', 'slice3Canvas'].forEach((id, i) => {
-          const c = document.getElementById(id);
-          c.width = w;
-          c.height = h;
-          c.getContext('2d').drawImage(fullScroll, i * w, 0, w, h, 0, 0, w, h);
-        });
-        resInfo.textContent = `三连无缝切片: 3 × (1080 × 1800 px)`;
-      } else if (state.viewMode === 'panorama') {
-        singleWrap.classList.remove('hidden');
-        slicesWrap.classList.add('hidden');
-        const fullScroll = renderTripleScrollCanvas(true);
-        previewCanvas.width = fullScroll.width;
-        previewCanvas.height = fullScroll.height;
-        previewCanvas.getContext('2d').drawImage(fullScroll, 0, 0);
-        resInfo.textContent = `三屏无缝长卷: 3240 × 1800 px (红线处自动切分为3张)`;
-      } else if (state.viewMode === 'single') {
-        singleWrap.classList.remove('hidden');
-        slicesWrap.classList.add('hidden');
-        const fullScroll = renderTripleScrollCanvas(false);
-        previewCanvas.width = 1080;
-        previewCanvas.height = 1800;
-        previewCanvas.getContext('2d').drawImage(fullScroll, 0, 0, 1080, 1800, 0, 0, 1080, 1800);
-        resInfo.textContent = `第1张主海报: 1080 × 1800 px (内框 900 × 600)`;
-      }
-    }
-
-    function setCamera(name) {
-      state.camera = name;
-      document.getElementById('cameraInput').value = name;
-      updatePreview();
-    }
-
-    function handlePhotoFile(file) {
-      if (!file) return;
-      const statusEl = document.getElementById('exifStatus');
-      statusEl.classList.remove('hidden');
-      statusEl.innerHTML = `<span class="text-zinc-400">正在读取照片与 EXIF 元数据...</span>`;
-
-      const bufReader = new FileReader();
-      bufReader.onload = (e) => {
-        const tags = parseExifFromBuffer(e.target.result);
-        if (tags && (tags[0x0110] || tags[0x829A] || tags[0x829D] || tags[0x8827] || tags[0x920A])) {
-          const cam = formatCameraModel(tags[0x010F], tags[0x0110]);
-          const focal = tags[0x920A] ? `${Math.round(tags[0x920A])}mm` : '';
-          const fNum = tags[0x829D] ? `F${Number(tags[0x829D].toFixed(1))}` : '';
-          const shutter = formatShutterSpeed(tags[0x829A]);
-          const iso = tags[0x8827] ? `ISO ${tags[0x8827]}` : '';
-
-          if (cam) { state.camera = cam; document.getElementById('cameraInput').value = cam; }
-          if (focal) { state.focal = focal; document.getElementById('focalInput').value = focal; }
-          if (fNum) { state.aperture = fNum; document.getElementById('apertureInput').value = fNum; }
-          if (shutter) { state.shutter = shutter; document.getElementById('shutterInput').value = shutter; }
-          if (iso) { state.iso = iso; document.getElementById('isoInput').value = iso; }
-
-          statusEl.innerHTML = `<span class="text-emerald-400">✓ 已成功提取原生 EXIF 拍摄参数</span>`;
-        } else {
-          statusEl.innerHTML = `<span class="text-amber-400">! 该图片未包含 EXIF 信息，已保留当前参数供手动微调</span>`;
-        }
-        updatePreview();
-      };
-      bufReader.readAsArrayBuffer(file);
-
-      const imgUrl = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        state.photoImg = img;
-        updatePreview();
-      };
-      img.src = imgUrl;
-    }
-
-    const dropZone = document.getElementById('dropZone');
-    const photoInput = document.getElementById('photoInput');
-
-    dropZone.addEventListener('click', () => photoInput.click());
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('border-white', 'bg-zinc-900');
-    });
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('border-white', 'bg-zinc-900');
-    });
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-white', 'bg-zinc-900');
-      if (e.dataTransfer.files[0]) handlePhotoFile(e.dataTransfer.files[0]);
-    });
-    photoInput.addEventListener('change', (e) => {
-      if (e.target.files[0]) handlePhotoFile(e.target.files[0]);
-    });
-
-    const bindInput = (id, key) => {
-      document.getElementById(id).addEventListener('input', (e) => {
-        state[key] = e.target.value;
-        updatePreview();
-      });
-    };
-    bindInput('cameraInput', 'camera');
-    bindInput('focalInput', 'focal');
-    bindInput('apertureInput', 'aperture');
-    bindInput('shutterInput', 'shutter');
-    bindInput('isoInput', 'iso');
-    bindInput('copyrightInput', 'copyright');
-
-    document.getElementById('frameWidthInput').addEventListener('input', (e) => {
-      state.frameWidth = Number(e.target.value);
-      document.getElementById('frameWidthVal').textContent = `${state.frameWidth}px`;
-      updatePreview();
-    });
-    document.getElementById('shadowInput').addEventListener('input', (e) => {
-      state.shadowStrength = Number(e.target.value);
-      document.getElementById('shadowVal').textContent = `${state.shadowStrength}%`;
-      updatePreview();
-    });
-
-    document.getElementById('bgInput').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const img = new Image();
-        img.onload = () => {
-          state.customBgImg = img;
-          document.getElementById('bgStatusText').innerHTML = `<span class="text-sky-400">✓ 已使用临时本地底图 (${file.name})</span>`;
-          updatePreview();
-        };
-        img.src = ev.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-
-    document.getElementById('resetBgBtn').addEventListener('click', () => {
-      state.customBgImg = null;
-      loadRepoBrickBackground();
-    });
-
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.mode-btn').forEach(b => {
-          b.classList.remove('active', 'bg-white', 'text-black', 'font-semibold');
-          b.classList.add('text-zinc-400');
-        });
-        btn.classList.add('active', 'bg-white', 'text-black', 'font-semibold');
-        btn.classList.remove('text-zinc-400');
-        state.viewMode = btn.dataset.mode;
-        updatePreview();
-      });
-    });
-
-    // ==========================================
-    // 7. 高清打包导出 (三连无缝 ZIP & 单图)
-    // ==========================================
-    function canvasToBlob(canvas) {
-      return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.96));
-    }
-
-    document.getElementById('exportSingleBtn').addEventListener('click', async () => {
-      const fullScroll = renderTripleScrollCanvas(false);
-      const singleC = document.createElement('canvas');
-      singleC.width = 1080;
-      singleC.height = 1800;
-      singleC.getContext('2d').drawImage(fullScroll, 0, 0, 1080, 1800, 0, 0, 1080, 1800);
-
-      const blob = await canvasToBlob(singleC);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Escage_01_Single_1080x1800_${Date.now()}.jpg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-
-    document.getElementById('exportZipBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('exportZipBtn');
-      const origText = btn.innerHTML;
-      btn.textContent = '正在生成三连无缝 1080×1800 切片并打包...';
-      btn.disabled = true;
-
-      try {
-        const zip = new JSZip();
-        const fullScroll = renderTripleScrollCanvas(false);
-        const w = 1080;
-        const h = 1800;
-
-        const sliceNames = [
-          '01_第一屏主海报_1080x1800.jpg',
-          '02_第二屏无缝左半_1080x1800.jpg',
-          '03_第三屏无缝右半_1080x1800.jpg'
-        ];
-
-        for (let i = 0; i < 3; i++) {
-          const sliceC = document.createElement('canvas');
-          sliceC.width = w;
-          sliceC.height = h;
-          sliceC.getContext('2d').drawImage(fullScroll, i * w, 0, w, h, 0, 0, w, h);
-          zip.file(sliceNames[i], await canvasToBlob(sliceC));
-        }
-
-        const content = await zip.generateAsync({ type: 'blob' });
-        const url = URL.createObjectURL(content);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Escage_Frame_Seamless_Pack_${Date.now()}.zip`;
-        a.click();
-        URL.revokeObjectURL(url);
-      } finally {
-        btn.innerHTML = origText;
-        btn.disabled = false;
-      }
-    });
-
-    window.addEventListener('DOMContentLoaded', () => {
-      state.demoImg = createDemoPhoto();
-      loadRepoBrickBackground();
-      updatePreview();
-    });
-  </script>
-</body>
-</html>
+      // 5. 第二、三屏双图无缝大图 (1080 ~ 3240 px)：左上角锚点固定 (1170, 218)，宽度锁定 1980px
+      const p2MaxH = footerY - 218 -
