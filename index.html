@@ -47,17 +47,17 @@
     </div>
 
     <div class="p-5 space-y-5 overflow-y-auto flex-1">
-      <!-- 1. 上传主照片 -->
+      <!-- 1. 上传主照片（使用原生 label 绑定，确保 100% 触发选框） -->
       <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">1. 上传摄影作品 (支持自动读 EXIF)</label>
-        <div id="dropZone" class="border-2 border-dashed border-zinc-700 hover:border-white transition-colors rounded-lg p-5 text-center cursor-pointer bg-zinc-950/50">
-          <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" class="hidden" />
-          <svg class="w-7 h-7 mx-auto text-zinc-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">1. 上传摄影作品 (支持自动读 EXIF)</span>
+        <input type="file" id="photoInput" accept="image/*" class="hidden" />
+        <label for="photoInput" id="dropZone" class="block border-2 border-dashed border-zinc-700 hover:border-white active:border-white transition-colors rounded-lg p-5 text-center cursor-pointer bg-zinc-950/50 select-none">
+          <svg class="w-7 h-7 mx-auto text-zinc-400 mb-2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
-          <p class="text-xs text-zinc-300 font-medium">点击或拖拽原图到此处</p>
-          <p class="text-[11px] text-zinc-500 mt-1">左上角锚点对齐 · 宽/短边锁定 900px 等比缩放</p>
-        </div>
+          <p class="text-xs text-zinc-300 font-medium pointer-events-none">点击或拖拽原图到此处</p>
+          <p class="text-[11px] text-zinc-500 mt-1 pointer-events-none">左上角锚点对齐 · 宽/短边锁定 900px 等比缩放</p>
+        </label>
         <div id="exifStatus" class="mt-2 text-[11px] text-zinc-400 hidden flex items-center gap-1.5"></div>
       </div>
 
@@ -124,9 +124,9 @@
         </div>
 
         <div class="flex items-center justify-between gap-2 pt-0.5">
-          <label class="flex-1 cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs py-2 px-3 rounded text-center transition border border-zinc-700">
-            <span>临时上传本地砖墙图</span>
-            <input type="file" id="bgInput" accept="image/*" class="hidden" />
+          <input type="file" id="bgInput" accept="image/*" class="hidden" />
+          <label for="bgInput" class="flex-1 cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs py-2 px-3 rounded text-center transition border border-zinc-700 select-none">
+            临时上传本地砖墙图
           </label>
           <button type="button" id="resetBgBtn" class="bg-zinc-950 hover:bg-zinc-800 text-zinc-400 text-xs py-2 px-2.5 rounded border border-zinc-800 transition" title="重新加载仓库默认底图">
             重置
@@ -155,13 +155,13 @@
 
     <!-- 底部导出按钮区 -->
     <div class="p-4 bg-zinc-950 border-t border-zinc-800 space-y-2">
-      <button id="exportZipBtn" class="w-full bg-white hover:bg-zinc-200 text-black font-bold text-xs py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-lg cursor-pointer">
+      <button type="button" id="exportZipBtn" class="w-full bg-white hover:bg-zinc-200 text-black font-bold text-xs py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-lg cursor-pointer">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
         </svg>
         一键打包导出 (三连无缝 1080×1800 ZIP)
       </button>
-      <button id="exportSingleBtn" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-xs py-2 px-4 rounded-lg transition cursor-pointer">
+      <button type="button" id="exportSingleBtn" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-xs py-2 px-4 rounded-lg transition cursor-pointer">
         仅下载第1张主海报 (1080×1800 .JPG)
       </button>
     </div>
@@ -172,13 +172,13 @@
     <!-- 顶部视图切换栏 -->
     <header class="h-14 bg-zinc-900/90 backdrop-blur border-b border-zinc-800 px-5 flex items-center justify-between">
       <div class="flex items-center gap-2 bg-zinc-950 p-1 rounded-lg border border-zinc-800">
-        <button data-mode="slices" class="mode-btn active bg-white text-black text-xs font-semibold px-3 py-1.5 rounded-md transition">
+        <button type="button" data-mode="slices" class="mode-btn active bg-white text-black text-xs font-semibold px-3 py-1.5 rounded-md transition">
           三连图无缝预览
         </button>
-        <button data-mode="panorama" class="mode-btn text-zinc-400 hover:text-white text-xs font-medium px-3 py-1.5 rounded-md transition">
+        <button type="button" data-mode="panorama" class="mode-btn text-zinc-400 hover:text-white text-xs font-medium px-3 py-1.5 rounded-md transition">
           三屏长卷全览 (3240×1800)
         </button>
-        <button data-mode="single" class="mode-btn text-zinc-400 hover:text-white text-xs font-medium px-3 py-1.5 rounded-md transition">
+        <button type="button" data-mode="single" class="mode-btn text-zinc-400 hover:text-white text-xs font-medium px-3 py-1.5 rounded-md transition">
           单张主海报 (1080×1800)
         </button>
       </div>
@@ -311,21 +311,10 @@
       let mk = (make || "").toUpperCase().trim();
       m = m.replace(/^ILCE-/, "A");
       if (mk && !m.startsWith(mk) && !mk.includes("SONY") && !mk.includes("DJI")) {
-        return `${mk} ${m}`;
+        return `${mk}${m}`;
       }
       if (mk.includes("SONY") && !m.startsWith("SONY")) {
-        return `SONY ${m}`;
-      }
-      return m || mk;
-    }
-
-    function formatShutterSpeed(val) {
-      if (!val || val <= 0) return "";
-      if (val >= 1) {
-        return Number.isInteger(val) ? `${val}s` : `${val.toFixed(1)}s`;
-      }
-      const denom = Math.round(1 / val);
-      return `1/${denom}`;
+        return `SONY ${m}`; } return m \vert{}\vert{} mk; }  function formatShutterSpeed(val) { if (!val \vert{}\vert{} val <= 0) return ""; if (val >= 1) { return Number.isInteger(val) ? `${val}s` : `${val.toFixed(1)}s`; } const denom = Math.round(1 / val); return `1/${denom}`;
     }
 
     // ==========================================
@@ -379,154 +368,7 @@
 
           const baseLum = 243 + Math.floor((seededRandom(seed++) - 0.5) * 12);
           const warmTint = Math.floor((seededRandom(seed++) - 0.5) * 3);
-          ctx.fillStyle = `rgb(${baseLum + warmTint}, ${baseLum + warmTint}, ${baseLum})`;
-
-          ctx.beginPath();
-          ctx.roundRect(cursorX, by, bw, brickH, 3);
-          ctx.fill();
-
-          const spots = 4;
-          for (let s = 0; s < spots; s++) {
-            const sx = cursorX + seededRandom(seed++) * (bw - 24);
-            const sy = by + seededRandom(seed++) * (brickH - 12);
-            const sw = 12 + seededRandom(seed++) * 28;
-            const sh = 6 + seededRandom(seed++) * 14;
-            ctx.fillStyle = seededRandom(seed++) > 0.5 ? 'rgba(255,255,255,0.35)' : 'rgba(180,185,192,0.12)';
-            ctx.fillRect(sx, sy, sw, sh);
-          }
-
-          ctx.fillStyle = 'rgba(255,255,255,0.75)';
-          ctx.fillRect(cursorX + 2, by, bw - 4, 2);
-          ctx.fillStyle = 'rgba(0,0,0,0.07)';
-          ctx.fillRect(cursorX + 1, by + brickH - 2, bw - 2, 2.5);
-
-          cursorX += bw + mortar + (seededRandom(seed++) - 0.5) * 2.5;
-        }
-      }
-
-      const imgData = ctx.getImageData(0, 0, width, height);
-      const data = imgData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        const grain = (seededRandom(i * 0.013) - 0.5) * 9;
-        data[i] = Math.min(255, Math.max(0, data[i] + grain));
-        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + grain));
-        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + grain));
-      }
-      ctx.putImageData(imgData, 0, 0);
-
-      [540, 1620, 2700].forEach(cx => {
-        const grad = ctx.createRadialGradient(cx, height * 0.32, 80, cx, height * 0.5, 950);
-        grad.addColorStop(0, 'rgba(255,255,255,0.20)');
-        grad.addColorStop(1, 'rgba(0,0,0,0.06)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(cx - 540, 0, 1080, height);
-      });
-
-      return c;
-    }
-
-    function createDemoPhoto() {
-      const c = document.createElement('canvas');
-      c.width = 1800;
-      c.height = 1200;
-      const ctx = c.getContext('2d');
-
-      const seaGrad = ctx.createLinearGradient(0, 0, 1260, 1200);
-      seaGrad.addColorStop(0, '#3a4f52');
-      seaGrad.addColorStop(0.5, '#596b67');
-      seaGrad.addColorStop(1, '#3d4c4e');
-      ctx.fillStyle = seaGrad;
-      ctx.fillRect(0, 0, 1800, 1200);
-
-      ctx.fillStyle = '#9e7634';
-      ctx.beginPath();
-      ctx.moveTo(1180, 0);
-      ctx.bezierCurveTo(1270, 420, 1340, 780, 1410, 1200);
-      ctx.lineTo(1800, 1200);
-      ctx.lineTo(1800, 0);
-      ctx.closePath();
-      ctx.fill();
-
-      for (let i = 0; i < 8000; i++) {
-        const sx = 1180 + Math.random() * 620;
-        const sy = Math.random() * 1200;
-        ctx.fillStyle = Math.random() > 0.5 ? 'rgba(40,25,10,0.35)' : 'rgba(240,200,120,0.35)';
-        ctx.fillRect(sx, sy, 3, 3);
-      }
-
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
-      ctx.lineWidth = 44;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(1160, -20);
-      ctx.bezierCurveTo(1250, 420, 1320, 780, 1390, 1220);
-      ctx.stroke();
-
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-      ctx.lineWidth = 16;
-      ctx.beginPath();
-      ctx.moveTo(940, -20);
-      ctx.bezierCurveTo(1020, 450, 1100, 810, 1150, 1220);
-      ctx.stroke();
-
-      return c;
-    }
-
-    // ==========================================
-    // 3. 辅助函数：将任意砖墙底图无痕镜像延展至 3240 × 1800
-    // ==========================================
-    function drawSeamlessBackground(ctx, bgImg, targetW, targetH) {
-      const scale = targetH / bgImg.height;
-      const tileW = bgImg.width * scale;
-      let cursorX = 0;
-      let index = 0;
-
-      while (cursorX < targetW) {
-        ctx.save();
-        if (index % 2 === 1) {
-          ctx.translate(cursorX + tileW, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(bgImg, 0, 0, tileW, targetH);
-        } else {
-          ctx.drawImage(bgImg, cursorX, 0, tileW, targetH);
-        }
-        ctx.restore();
-        cursorX += tileW;
-        index++;
-      }
-    }
-
-    // ==========================================
-    // 核心缩放逻辑：以左上角为锚点，锁定基准宽/短边等比缩放
-    // ==========================================
-    function drawAnchoredFramedPhoto(ctx, img, anchorX, anchorY, baseSpanW, maxAllowedH) {
-      const imgRatio = img.width / img.height;
-
-      // 始终以 anchorX, anchorY 为固定左上角锚点
-      // 横向基准锁定为 baseSpanW (第一屏 900px / 二三屏 1980px)，竖图时保持短边 900px 向下延伸
-      let frameW = baseSpanW;
-      let frameH = frameW / imgRatio;
-
-      // 安全防溢出保护：若极端超长竖图超出画布可用高度，等比限制在 maxAllowedH 内且仍钉死左上角
-      if (maxAllowedH && frameH > maxAllowedH) {
-        frameH = maxAllowedH;
-        frameW = frameH * imgRatio;
-      }
-
-      const frameX = anchorX;
-      const frameY = anchorY;
-
-      const border = state.frameWidth;
-      const photoX = frameX + border;
-      const photoY = frameY + border;
-      const photoW = Math.max(10, frameW - border * 2);
-      const photoH = Math.max(10, frameH - border * 2);
-
-      // 墙面立体投影与黑色画框
-      ctx.save();
-      if (state.shadowStrength > 0) {
-        const alpha = (state.shadowStrength / 100) * 0.65;
-        ctx.shadowColor = `rgba(0, 0, 0, ${alpha})`;
+          ctx.fillStyle = `rgb(${baseLum + warmTint},${baseLum + warmTint}, ${baseLum})`;  ctx.beginPath(); ctx.roundRect(cursorX, by, bw, brickH, 3); ctx.fill();  const spots = 4; for (let s = 0; s < spots; s++) { const sx = cursorX + seededRandom(seed++) * (bw - 24); const sy = by + seededRandom(seed++) * (brickH - 12); const sw = 12 + seededRandom(seed++) * 28; const sh = 6 + seededRandom(seed++) * 14; ctx.fillStyle = seededRandom(seed++) > 0.5 ? 'rgba(255,255,255,0.35)' : 'rgba(180,185,192,0.12)'; ctx.fillRect(sx, sy, sw, sh); }  ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.fillRect(cursorX + 2, by, bw - 4, 2); ctx.fillStyle = 'rgba(0,0,0,0.07)'; ctx.fillRect(cursorX + 1, by + brickH - 2, bw - 2, 2.5);  cursorX += bw + mortar + (seededRandom(seed++) - 0.5) * 2.5; } }  const imgData = ctx.getImageData(0, 0, width, height); const data = imgData.data; for (let i = 0; i < data.length; i += 4) { const grain = (seededRandom(i * 0.013) - 0.5) * 9; data[i] = Math.min(255, Math.max(0, data[i] + grain)); data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + grain)); data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + grain)); } ctx.putImageData(imgData, 0, 0);  [540, 1620, 2700].forEach(cx => { const grad = ctx.createRadialGradient(cx, height * 0.32, 80, cx, height * 0.5, 950); grad.addColorStop(0, 'rgba(255,255,255,0.20)'); grad.addColorStop(1, 'rgba(0,0,0,0.06)'); ctx.fillStyle = grad; ctx.fillRect(cx - 540, 0, 1080, height); });  return c; }  function createDemoPhoto() { const c = document.createElement('canvas'); c.width = 1800; c.height = 1200; const ctx = c.getContext('2d');  const seaGrad = ctx.createLinearGradient(0, 0, 1260, 1200); seaGrad.addColorStop(0, '#3a4f52'); seaGrad.addColorStop(0.5, '#596b67'); seaGrad.addColorStop(1, '#3d4c4e'); ctx.fillStyle = seaGrad; ctx.fillRect(0, 0, 1800, 1200);  ctx.fillStyle = '#9e7634'; ctx.beginPath(); ctx.moveTo(1180, 0); ctx.bezierCurveTo(1270, 420, 1340, 780, 1410, 1200); ctx.lineTo(1800, 1200); ctx.lineTo(1800, 0); ctx.closePath(); ctx.fill();  for (let i = 0; i < 8000; i++) { const sx = 1180 + Math.random() * 620; const sy = Math.random() * 1200; ctx.fillStyle = Math.random() > 0.5 ? 'rgba(40,25,10,0.35)' : 'rgba(240,200,120,0.35)'; ctx.fillRect(sx, sy, 3, 3); }  ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)'; ctx.lineWidth = 44; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(1160, -20); ctx.bezierCurveTo(1250, 420, 1320, 780, 1390, 1220); ctx.stroke();  ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)'; ctx.lineWidth = 16; ctx.beginPath(); ctx.moveTo(940, -20); ctx.bezierCurveTo(1020, 450, 1100, 810, 1150, 1220); ctx.stroke();  return c; }  // ========================================== // 3. 辅助函数：将任意砖墙底图无痕镜像延展至 3240 × 1800 // ========================================== function drawSeamlessBackground(ctx, bgImg, targetW, targetH) { const scale = targetH / bgImg.height; const tileW = bgImg.width * scale; let cursorX = 0; let index = 0;  while (cursorX < targetW) { ctx.save(); if (index \% 2 === 1) { ctx.translate(cursorX + tileW, 0); ctx.scale(-1, 1); ctx.drawImage(bgImg, 0, 0, tileW, targetH); } else { ctx.drawImage(bgImg, cursorX, 0, tileW, targetH); } ctx.restore(); cursorX += tileW; index++; } }  // 以左上角为锚点，锁定基准宽/短边等比缩放 function drawAnchoredFramedPhoto(ctx, img, anchorX, anchorY, baseSpanW, maxAllowedH) { const imgRatio = img.width / img.height;  let frameW = baseSpanW; let frameH = frameW / imgRatio;  if (maxAllowedH && frameH > maxAllowedH) { frameH = maxAllowedH; frameW = frameH * imgRatio; }  const frameX = anchorX; const frameY = anchorY;  const border = state.frameWidth; const photoX = frameX + border; const photoY = frameY + border; const photoW = Math.max(10, frameW - border * 2); const photoH = Math.max(10, frameH - border * 2);  ctx.save(); if (state.shadowStrength > 0) { const alpha = (state.shadowStrength / 100) * 0.65; ctx.shadowColor = `rgba(0, 0, 0, ${alpha})`;
         ctx.shadowBlur = 38;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 18;
@@ -535,7 +377,6 @@
       ctx.fillRect(frameX, frameY, frameW, frameH);
       ctx.restore();
 
-      // 作品本体
       ctx.drawImage(img, photoX, photoY, photoW, photoH);
 
       return { frameX, frameY, frameW, frameH };
@@ -554,7 +395,6 @@
       canvas.height = totalH;
       const ctx = canvas.getContext('2d');
 
-      // 1. 绘制全画幅无缝白砖墙底图
       const activeBg = state.customBgImg || state.repoBgImg;
       if (activeBg) {
         drawSeamlessBackground(ctx, activeBg, totalW, totalH);
@@ -565,7 +405,6 @@
         ctx.drawImage(state.organicBrickPattern, 0, 0);
       }
 
-      // 2. 底部通栏版权黑条 (严格 45px 高度)
       const footerH = 45;
       const footerY = totalH - footerH;
       ctx.fillStyle = '#050505';
@@ -582,12 +421,11 @@
         ctx.letterSpacing = '0px';
       }
 
-      // 3. 第一屏主海报 (0 ~ 1080 px)：左上角锚点固定 (90, 300)，短边/宽度锁定 900px
-      // 为下方 70px 间距 + 约 80px 铭牌 + 底部 45px 版权条预留空间 (最大画框高 1260px，兼容 2:3 竖图完整 900×1350 见下方动态计算)
-      const p1MaxH = footerY - 300 - 70 - 95; // = 1290px，横图(600px)与常见4:5竖图(1125px)均100%保持900px短边
+      // 第一屏主海报：左上角锚点固定 (90, 300)
+      const p1MaxH = footerY - 300 - 70 - 95;
       const p1Frame = drawAnchoredFramedPhoto(ctx, img, 90, 300, 900, p1MaxH);
 
-      // 4. 在第一屏画框下方 70px 处绘制黑底白字独立徽章铭牌（始终紧跟画框底边，间距 6px）
+      // 第一屏黑底白字独立徽章铭牌
       const badgeStartX = p1Frame.frameX;
       let currentY = p1Frame.frameY + p1Frame.frameH + 70;
 
@@ -650,5 +488,230 @@
         });
       }
 
-      // 5. 第二、三屏双图无缝大图 (1080 ~ 3240 px)：左上角锚点固定 (1170, 218)，宽度锁定 1980px
-      const p2MaxH = footerY - 218 -
+      // 第二、三屏双图无缝大图：左上角锚点固定 (1170, 218)
+      const p2MaxH = footerY - 218 - 60;
+      drawAnchoredFramedPhoto(ctx, img, 1080 + 90, 218, 1980, p2MaxH);
+
+      if (showGuideLines) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([14, 10]);
+        [1080, 2160].forEach(lineX => {
+          ctx.beginPath();
+          ctx.moveTo(lineX, 0);
+          ctx.lineTo(lineX, totalH);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+
+      return canvas;
+    }
+
+    // ==========================================
+    // 5. 自动探测并加载仓库同级目录下的 brick-bg 图片素材
+    // ==========================================
+    function loadRepoBrickBackground() {
+      const statusText = document.getElementById('bgStatusText');
+      const candidates = ['brick-bg.jpg', 'brick-bg.png', 'brick-bg.webp', 'brick-bg.JPG'];
+      let idx = 0;
+
+      function tryNext() {
+        if (idx >= candidates.length) {
+          statusText.innerHTML = `<span class="text-zinc-400">当前：自然石膏纹理 (上传 <code class="text-zinc-200">brick-bg.jpg</code> 至仓库可自动替换)</span>`;
+          updatePreview();
+          return;
+        }
+        const filename = candidates[idx++];
+        const img = new Image();
+        img.onload = () => {
+          state.repoBgImg = img;
+          statusText.innerHTML = `<span class="text-emerald-400">✓ 已自动加载仓库素材 <code class="underline">${filename}</code></span>`;
+          updatePreview();
+        };
+        img.onerror = () => {
+          tryNext();
+        };
+        img.src = `./${filename}?v=${Date.now()}`;
+      }
+
+      tryNext();
+    }
+
+    // ==========================================
+    // 6. 界面刷新与交互绑定
+    // ==========================================
+    function updatePreview() {
+      const previewCanvas = document.getElementById('previewCanvas');
+      const resInfo = document.getElementById('resolutionInfo');
+      const singleWrap = document.getElementById('singlePreviewWrap');
+      const slicesWrap = document.getElementById('slicesPreviewWrap');
+
+      if (state.viewMode === 'slices') {
+        singleWrap.classList.add('hidden');
+        slicesWrap.classList.remove('hidden');
+        const fullScroll = renderTripleScrollCanvas(false);
+        const w = 1080;
+        const h = 1800;
+
+        ['slice1Canvas', 'slice2Canvas', 'slice3Canvas'].forEach((id, i) => {
+          const c = document.getElementById(id);
+          c.width = w;
+          c.height = h;
+          c.getContext('2d').drawImage(fullScroll, i * w, 0, w, h, 0, 0, w, h);
+        });
+        resInfo.textContent = `三连无缝切片: 3 × (1080 × 1800 px)`;
+      } else if (state.viewMode === 'panorama') {
+        singleWrap.classList.remove('hidden');
+        slicesWrap.classList.add('hidden');
+        const fullScroll = renderTripleScrollCanvas(true);
+        previewCanvas.width = fullScroll.width;
+        previewCanvas.height = fullScroll.height;
+        previewCanvas.getContext('2d').drawImage(fullScroll, 0, 0);
+        resInfo.textContent = `三屏无缝长卷: 3240 × 1800 px (红线处自动切分为3张)`;
+      } else if (state.viewMode === 'single') {
+        singleWrap.classList.remove('hidden');
+        slicesWrap.classList.add('hidden');
+        const fullScroll = renderTripleScrollCanvas(false);
+        previewCanvas.width = 1080;
+        previewCanvas.height = 1800;
+        previewCanvas.getContext('2d').drawImage(fullScroll, 0, 0, 1080, 1800, 0, 0, 1080, 1800);
+        resInfo.textContent = `第1张主海报: 1080 × 1800 px (左上角锚点 90, 300)`;
+      }
+    }
+
+    function setCamera(name) {
+      state.camera = name;
+      document.getElementById('cameraInput').value = name;
+      updatePreview();
+    }
+
+    function handlePhotoFile(file) {
+      if (!file) return;
+      const statusEl = document.getElementById('exifStatus');
+      statusEl.classList.remove('hidden');
+      statusEl.innerHTML = `<span class="text-zinc-400">正在读取照片与 EXIF 元数据...</span>`;
+
+      const bufReader = new FileReader();
+      bufReader.onload = (e) => {
+        const tags = parseExifFromBuffer(e.target.result);
+        if (tags && (tags[0x0110] || tags[0x829A] || tags[0x829D] || tags[0x8827] || tags[0x920A])) {
+          const cam = formatCameraModel(tags[0x010F], tags[0x0110]);
+          const focal = tags[0x920A] ? `${Math.round(tags[0x920A])}mm` : '';
+          const fNum = tags[0x829D] ? `F${Number(tags[0x829D].toFixed(1))}` : ''; const shutter = formatShutterSpeed(tags[0x829A]); const iso = tags[0x8827] ? `ISO ${tags[0x8827]}` : '';
+
+          if (cam) { state.camera = cam; document.getElementById('cameraInput').value = cam; }
+          if (focal) { state.focal = focal; document.getElementById('focalInput').value = focal; }
+          if (fNum) { state.aperture = fNum; document.getElementById('apertureInput').value = fNum; }
+          if (shutter) { state.shutter = shutter; document.getElementById('shutterInput').value = shutter; }
+          if (iso) { state.iso = iso; document.getElementById('isoInput').value = iso; }
+
+          statusEl.innerHTML = `<span class="text-emerald-400">✓ 已成功提取原生 EXIF 拍摄参数</span>`;
+        } else {
+          statusEl.innerHTML = `<span class="text-amber-400">! 该图片未包含 EXIF 信息，已保留当前参数供手动微调</span>`;
+        }
+        updatePreview();
+      };
+      bufReader.readAsArrayBuffer(file);
+
+      const imgUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        state.photoImg = img;
+        updatePreview();
+      };
+      img.src = imgUrl;
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    const photoInput = document.getElementById('photoInput');
+
+    dropZone.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-white', 'bg-zinc-900');
+    });
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-white', 'bg-zinc-900');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-white', 'bg-zinc-900');
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-white', 'bg-zinc-900');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handlePhotoFile(e.dataTransfer.files[0]);
+      }
+    });
+    photoInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handlePhotoFile(e.target.files[0]);
+        e.target.value = ''; // 允许连续选择同一张照片
+      }
+    });
+
+    const bindInput = (id, key) => {
+      document.getElementById(id).addEventListener('input', (e) => {
+        state[key] = e.target.value;
+        updatePreview();
+      });
+    };
+    bindInput('cameraInput', 'camera');
+    bindInput('focalInput', 'focal');
+    bindInput('apertureInput', 'aperture');
+    bindInput('shutterInput', 'shutter');
+    bindInput('isoInput', 'iso');
+    bindInput('copyrightInput', 'copyright');
+
+    document.getElementById('frameWidthInput').addEventListener('input', (e) => {
+      state.frameWidth = Number(e.target.value);
+      document.getElementById('frameWidthVal').textContent = `${state.frameWidth}px`; updatePreview(); }); document.getElementById('shadowInput').addEventListener('input', (e) => { state.shadowStrength = Number(e.target.value); document.getElementById('shadowVal').textContent = `${state.shadowStrength}%`;
+      updatePreview();
+    });
+
+    document.getElementById('bgInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          state.customBgImg = img;
+          document.getElementById('bgStatusText').innerHTML = `<span class="text-sky-400">✓ 已使用临时本地底图 (${file.name})</span>`; updatePreview(); }; img.src = ev.target.result; }; reader.readAsDataURL(file); e.target.value = ''; });  document.getElementById('resetBgBtn').addEventListener('click', () => { state.customBgImg = null; loadRepoBrickBackground(); });  document.querySelectorAll('.mode-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.mode-btn').forEach(b => { b.classList.remove('active', 'bg-white', 'text-black', 'font-semibold'); b.classList.add('text-zinc-400'); }); btn.classList.add('active', 'bg-white', 'text-black', 'font-semibold'); btn.classList.remove('text-zinc-400'); state.viewMode = btn.dataset.mode; updatePreview(); }); });  // ========================================== // 7. 高清打包导出 (三连无缝 ZIP & 单图) // ========================================== function canvasToBlob(canvas) { return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.96)); }  document.getElementById('exportSingleBtn').addEventListener('click', async () => { const fullScroll = renderTripleScrollCanvas(false); const singleC = document.createElement('canvas'); singleC.width = 1080; singleC.height = 1800; singleC.getContext('2d').drawImage(fullScroll, 0, 0, 1080, 1800, 0, 0, 1080, 1800);  const blob = await canvasToBlob(singleC); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Escage_01_Single_1080x1800_${Date.now()}.jpg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('exportZipBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('exportZipBtn');
+      const origText = btn.innerHTML;
+      btn.textContent = '正在生成三连无缝 1080×1800 切片并打包...';
+      btn.disabled = true;
+
+      try {
+        const zip = new JSZip();
+        const fullScroll = renderTripleScrollCanvas(false);
+        const w = 1080;
+        const h = 1800;
+
+        const sliceNames = [
+          '01_第一屏主海报_1080x1800.jpg',
+          '02_第二屏无缝左半_1080x1800.jpg',
+          '03_第三屏无缝右半_1080x1800.jpg'
+        ];
+
+        for (let i = 0; i < 3; i++) {
+          const sliceC = document.createElement('canvas');
+          sliceC.width = w;
+          sliceC.height = h;
+          sliceC.getContext('2d').drawImage(fullScroll, i * w, 0, w, h, 0, 0, w, h);
+          zip.file(sliceNames[i], await canvasToBlob(sliceC));
+        }
+
+        const content = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Escage
